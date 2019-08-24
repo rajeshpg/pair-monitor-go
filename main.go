@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"github.com/rajeshpg/pair-monitor-go/controllers"
 	"github.com/rajeshpg/pair-monitor-go/models"
 	"github.com/rajeshpg/pair-monitor-go/repos"
 	"log"
@@ -9,7 +10,6 @@ import (
 
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/sqlite"
-	"github.com/rajeshpg/pair-monitor-go/controllers"
 )
 
 func main() {
@@ -17,10 +17,9 @@ func main() {
 	db := initiateDb()
 	defer db.Close()
 
-	http.HandleFunc("/", Index)
-	http.Handle("/sessions", &controllers.PairMonitor{Repo: &repos.DevPairDao{Db: db}})
+	pairMonitor := controllers.NewPairMonitor(&repos.DevPairDao{Db: db})
 
-	log.Fatal(http.ListenAndServe(":5000", nil))
+	log.Fatal(http.ListenAndServe(":5000", pairMonitor))
 }
 
 func initiateDb() *gorm.DB {
@@ -37,7 +36,5 @@ func initiateDb() *gorm.DB {
 }
 
 
-func Index(w http.ResponseWriter, r *http.Request){
-	fmt.Fprint(w, "pair monitor")
-}
+
 
