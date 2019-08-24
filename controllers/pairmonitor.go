@@ -8,6 +8,7 @@ import (
 	"net/http"
 )
 
+
 type PairMonitor struct {
 	Repo DevPairRepo
 }
@@ -18,9 +19,9 @@ func (pairMonitor *PairMonitor) ServeHTTP(w http.ResponseWriter, r *http.Request
 
 	switch r.Method {
 	case http.MethodPost:
-		saveSession(pairMonitor.Repo, w, formValToDevPair(r))
+		pairMonitor.saveSession(w, formValToDevPair(r))
 	case http.MethodGet:
-		allSessions(pairMonitor.Repo, w)
+		pairMonitor.allSessions(w)
 	}
 }
 
@@ -28,8 +29,8 @@ func formValToDevPair(r *http.Request) *DevPair {
 	return &DevPair{Dev1: r.FormValue("dev1"), Dev2: r.FormValue("dev2")}
 }
 
-func saveSession(repo DevPairRepo, w http.ResponseWriter, devPair *DevPair){
-	_, err := repo.SaveSession(devPair)
+func (pairMonitor *PairMonitor) saveSession(w http.ResponseWriter, devPair *DevPair){
+	_, err := pairMonitor.Repo.SaveSession(devPair)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		fmt.Fprint(w, err.Error())
@@ -39,8 +40,8 @@ func saveSession(repo DevPairRepo, w http.ResponseWriter, devPair *DevPair){
 	json.NewEncoder(w).Encode(devPair)
 }
 
-func allSessions(repo DevPairRepo, w http.ResponseWriter) {
-	pairs, err := repo.AllSessions()
+func (pairMonitor *PairMonitor) allSessions(w http.ResponseWriter) {
+	pairs, err := pairMonitor.Repo.AllSessions()
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		fmt.Fprint(w, err.Error())

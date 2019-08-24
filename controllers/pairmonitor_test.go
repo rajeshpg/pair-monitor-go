@@ -34,8 +34,9 @@ func (repo *MockErrorRepo) AllSessions() ([]DevPair, error) {
 func Test_saveSession(t *testing.T) {
 
 	t.Run("save a pairing session", func(t *testing.T) {
+		pairMonitor := PairMonitor{Repo: &MockRepo{}}
 		response := httptest.NewRecorder()
-		saveSession(&MockRepo{}, response, &DevPair{Dev1:"superman", Dev2:"batman"})
+		pairMonitor.saveSession(response, &DevPair{Dev1:"superman", Dev2:"batman"})
 		var got DevPair
 		json.NewDecoder(response.Body).Decode(&got)
 		want := DevPair{ID: 1, Dev1: "superman", Dev2: "batman"}
@@ -45,8 +46,9 @@ func Test_saveSession(t *testing.T) {
 	})
 
 	t.Run("respond with error", func(t *testing.T) {
+		pairMonitor := PairMonitor{Repo: &MockErrorRepo{}}
 		response := httptest.NewRecorder()
-		saveSession(&MockErrorRepo{}, response, &DevPair{Dev1:"superman", Dev2:"batman"})
+		pairMonitor.saveSession(response, &DevPair{Dev1:"superman", Dev2:"batman"})
 		want := http.StatusInternalServerError
 		got := response.Result().StatusCode
 		if got != want {
@@ -58,8 +60,9 @@ func Test_saveSession(t *testing.T) {
 func Test_allSessions(t *testing.T) {
 
 	t.Run("retrieve all sessions", func(t *testing.T) {
+		pairMonitor := PairMonitor{Repo: &MockRepo{}}
 		response := httptest.NewRecorder()
-		allSessions(&MockRepo{}, response)
+		pairMonitor.allSessions(response)
 		var want = DevPair{ID:1, Dev1:"superman", Dev2:"batman"}
 		var got []DevPair
 		json.NewDecoder(response.Body).Decode(&got)
@@ -69,8 +72,9 @@ func Test_allSessions(t *testing.T) {
 	})
 
 	t.Run("respond with error", func(t *testing.T) {
+		pairMonitor := PairMonitor{Repo: &MockErrorRepo{}}
 		response := httptest.NewRecorder()
-		allSessions(&MockErrorRepo{}, response)
+		pairMonitor.allSessions(response)
 		want := http.StatusInternalServerError
 		got := response.Result().StatusCode
 		if got != want {
